@@ -1,0 +1,54 @@
+* Core
+** DONE Double Auction
+*** DONE Accept bids/asks
+*** DONE Check validity of bids/asks
+*** DONE Create transactions
+*** DONE Record transaction history 
+** Players & Earnings
+** Utility functions
+** Experiment Driver
+*** Plaintext reader?
+* Communication
+Use boost::asio
+** Connection
+*** Timeout if failure
+** Server -> Clients
+*** Market updates
+*** Kill signal
+*** End round/experiment
+*** Earnings
+** Client -> Server
+*** Bids/Asks
+*** Retractions
+*** Names
+* Client GUI
+Use QT
+** Base Screen
+*** Market Queue
+*** Bid/Ask Submissions
+*** Prediction area
+*** Transaction History
+*** Current Status
+** Earnings Screen
+** Names
+* Server GUI
+** Start/Pause/End
+** Current Earnings
+** Current Market Status
+** Edgeworth graphs
+* Output
+** CSV
+*** Bids/Asks/Retractions
+*** Transactions
+*** End States
+** Payout File
+* Configuration File
+** Endowments
+** Exchange rates
+** Period length
+** number rounds
+** Player position designations (buyer/seller/trader)
+* Binaries
+- Get windows set up with boost libraries
+- Read up on how to make windows binaries
+* Documentation

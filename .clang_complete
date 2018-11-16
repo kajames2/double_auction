@@ -1,0 +1,7 @@
+-Iinclude
+-lgtest
+-lgtest_main
+-lpthread
+-g
+-std=c++14
+-stdlib=libc++
