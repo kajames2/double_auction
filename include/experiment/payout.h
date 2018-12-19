@@ -14,10 +14,7 @@ struct Payout {
   int cents;
 };
 
-Payout ToPayout(const Player& p, double eperdollar) {
-  int ncents = static_cast<int>(std::round(p.edollars * 100 / eperdollar));
-  return Payout{p.id, p.name, ncents};
-}
+Payout ToPayout(const Player& p, double eperdollar);
 
 }  //  namespace experiment
 

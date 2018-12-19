@@ -2,28 +2,28 @@ CC := clang++-6.0
 SRCDIR := src
 BUILDDIR := build
 TESTDIR := test
-TARGET := gem
+TARGET := sample_experiment
 
 SRCEXT := cc
 SOURCES := $(shell find $(SRCDIR) -type f -name "*.$(SRCEXT)")
 TESTS := $(shell find $(TESTDIR) -type f -name "*.$(SRCEXT)")
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 TESTOBJECTS := $(patsubst $(TESTDIR)/%,$(BUILDDIR)/%,$(TESTS:.$(SRCEXT)=.o))
-CFLAGS := -g -std=c++17 -O3 -flto
-LIB := -lgtest -lgtest_main
-INC := -I include
+CFLAGS := -g -std=c++17 -O3 -flto #-fopenmp
+LIB := -lpthread 
+INC := -I include -I lib
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
-	@echo " $(CC) -shared $^ -o lib/lib$(TARGET).so"; $(CC) -shared $(CFLAGS) $(INC) $^ -o lib/lib$(TARGET).so
+	@echo "$(CC) $(CFLAGS) $(INC) $^ $(LIB) $(TARGET).$(SRCEXT) -o bin/$(TARGET)"; $(CC) $(CFLAGS) $(INC) $^ $(LIB) $(TARGET).$(SRCEXT) -o bin/$(TARGET)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(@D)
-	@echo " $(CC) $(CFLAGS) -fpic $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) -fpic $(INC) -c -o $@ $<
+	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
 	@echo " Cleaning..."; 
-	@echo " $(RM) -r $(BUILDDIR) lib/*.*"; $(RM) -r $(BUILDDIR) lib/*.*
+	@echo " $(RM) -r $(BUILDDIR) $(TARGET)"; $(RM) -r $(BUILDDIR) $(TARGET)
 
 # Tests
 tests_main: $(TESTOBJECTS) $(OBJECTS)

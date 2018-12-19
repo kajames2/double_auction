@@ -1,13 +1,15 @@
 #ifndef _EXPERIMENT_EXPERIMENT_H_
 #define _EXPERIMENT_EXPERIMENT_H_
 
-#include <cmath>
+#include <map>
+#include <vector>
 
+#include "experiment/configuration.h"
+#include "experiment/experiment_enums.h"
+#include "experiment/experiment_state.h"
 #include "experiment/payout.h"
 #include "experiment/player.h"
-#include "experiment/round_result.h"
-#include "experiment/configuration.h"
-#include "market/market.h"
+#include "experiment/player_round_result.h"
 
 namespace experiment {
 
@@ -16,15 +18,19 @@ class Experiment {
   Experiment(Configuration config_, std::vector<int> player_ids);
   void SetRound(int n);
   void NextRound();
-  void AddRoundEarnings();
-  std::vector<market::Transaction> GetPeriodTransactions();
-  std::vector<RoundResult> GetRoundResults();
+  void AddRoundEarnings(std::map<int, market::Holdings>);
+  std::vector<PlayerRoundResult> GetRoundResults(
+      std::map<int, market::Holdings> holdings);
   std::vector<Payout> GetPayouts();
+  ExperimentState GetState() const;
+  void SetStatus(Status status) { status_ = status; }
+  void SetStage(Stage stage) { stage_ = stage; }
 
  private:
-  std::map<int, Player> players_;
-  market::Market market_;
   int round_;
+  Status status_;
+  Stage stage_;
+  std::map<int, Player> players_;
   Configuration config_;
 };
 

@@ -2,20 +2,33 @@
 #define _MARKET_MARKET_H_
 
 #include <map>
+#include <ostream>
 
-#include "market/ask.h"
-#include "market/bid.h"
 #include "market/clearing_queue.h"
 #include "market/holdings.h"
+#include "market/market_state.h"
+#include "market/offer_validity.h"
 
 namespace market {
 
 class Market {
  public:
+  Market() {}
   Market(std::map<int, Holdings> init) : auction_(), player_holdings_(init) {}
 
-  std::vector<Transaction> AcceptBid(market::Bid bid);
-  std::vector<Transaction> AcceptAsk(market::Ask ask);
+  template <typename T>
+  std::vector<Transaction> AcceptOffer(T offer) {
+    auction_.AddOffer(offer);
+    return Update(offer.timestamp);
+  }
+
+  template <typename T>
+  OfferValidity CheckOffer(T offer) const {
+    return market::CheckOffer(offer, GetState());
+  }
+
+  void RetractOffer(int unique_id) { auction_.RetractOffer(unique_id); }
+
   Holdings GetHoldings(int id) const { return player_holdings_.at(id); }
   std::map<int, Holdings> GetAllHoldings() const { return player_holdings_; }
   std::vector<Bid> GetBids(int id) const { return auction_.GetBids(id); }
@@ -23,24 +36,17 @@ class Market {
   std::vector<Transaction> GetTransactionHistory() const {
     return auction_.GetHistory();
   }
+  MarketState GetState() const {
+    return MarketState{player_holdings_, GetTransactionHistory(),
+                       auction_.GetBidQueue(), auction_.GetAskQueue()};
+  }
 
  private:
-  std::vector<market::Transaction> Update();
+  std::vector<Transaction> Update(double time);
+
   market::ClearingQueue auction_;
   std::map<int, Holdings> player_holdings_;
 };
-
-template <typename T> bool IsValid(const Market& m, std::vector<T> current_subs, T sub) {
-  auto holdings = m.GetHoldings(sub.id);
-  for (auto b : current_subs) {
-    holdings += ToHoldings(b);
-  }
-  holdings += ToHoldings(sub);
-  return IsValid(holdings);
-}
-
-bool IsValid(const Market& m, Bid bid);
-bool IsValid(const Market& m, Ask ask);
 
 }  // namespace market
 

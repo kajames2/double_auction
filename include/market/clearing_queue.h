@@ -3,6 +3,7 @@
 
 #include "market/ask.h"
 #include "market/bid.h"
+#include "market/offer_queue.h"
 #include "market/transaction.h"
 
 #include <chrono>
@@ -13,25 +14,35 @@ namespace market {
 class ClearingQueue {
  public:
   ClearingQueue();
-  ClearingQueue(std::chrono::time_point<std::chrono::system_clock> time);
-  void AddBid(Bid bid) { bids_.push_back(bid); }
-  void AddAsk(Ask ask) { asks_.push_back(ask); }
-  void RetractBid(Bid bid);
-  void RetractAsk(Ask ask);
-  std::vector<Transaction> Process(std::chrono::time_point<std::chrono::system_clock> time);
-  std::vector<Transaction> Process();
-  std::vector<Bid> GetBids(int id) const;
-  std::vector<Ask> GetAsks(int id) const;
+  std::vector<Transaction> Process(double time);
   std::vector<Transaction> GetHistory() const { return history_; }
+
+  void RetractOffer(int unique_id) {
+    bids_.RetractOffer(unique_id);
+    asks_.RetractOffer(unique_id);
+  }
+  void AddOffer(Bid bid) { bids_.push_back(bid); }
+  void AddOffer(Ask ask) { asks_.push_back(ask); }
+  std::vector<Bid> GetBids(int player_id) const {
+    return bids_.GetOffers(player_id);
+  }
+  std::vector<Ask> GetAsks(int player_id) const {
+    return asks_.GetOffers(player_id);
+  }
+  OfferQueue<Bid> GetBidQueue() const { return bids_; }
+  OfferQueue<Ask> GetAskQueue() const { return asks_; }
+  Bid GetStandingBid() const { return bids_.GetStandingOffer(); }
+  Ask GetStandingAsk() const { return asks_.GetStandingOffer(); }
+  bool BidQueueEmpty() const { return bids_.empty(); }
+  bool AskQueueEmpty() const { return asks_.empty(); }
 
  private:
   void SortQueues();
   bool AreTrades() const;
 
-  std::vector<Bid> bids_;
-  std::vector<Ask> asks_;
+  OfferQueue<Bid> bids_;
+  OfferQueue<Ask> asks_;
   std::vector<Transaction> history_;
-  std::chrono::time_point<std::chrono::system_clock> market_start;
 };
 
 }  // namespace market

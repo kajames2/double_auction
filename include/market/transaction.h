@@ -10,15 +10,15 @@ struct Ask;
 namespace market {
 
 struct Transaction {
-  int timestamp;
+  double timestamp;
   int buyer_id;
   int seller_id;
   int price;
   int quantity;
 };
 
-Transaction MakeTransaction(int time, Bid bid, Ask ask);
-std::ostream& operator<<(std::ostream& os, Transaction t);
+Transaction MakeTransaction(double time, Bid bid, Ask ask);
+std::ostream& operator<<(std::ostream& os, const Transaction t);
 
 }  // namespace market
 

@@ -2,31 +2,36 @@
 
 namespace experiment {
 
-void Experiment::SetRound(int n) {
-  round_ = n;
-  market_ = market::Market(config_.init_holdings[n]);
+Experiment::Experiment(Configuration config, std::vector<int> player_ids)
+    : config_(config),
+      round_(0),
+      status_(Status::NotStarted),
+      stage_(Stage::PreExperiment) {
+  for (auto id : player_ids) {
+    players_[id] = Player{id, "", 0};
+  }
 }
+
+void Experiment::SetRound(int n) { round_ = n; }
 
 void Experiment::NextRound() { SetRound(round_ + 1); }
 
-void Experiment::AddRoundEarnings() {
+void Experiment::AddRoundEarnings(std::map<int, market::Holdings> holdings) {
   for (auto& [id, player] : players_) {
-    auto holdings = market_.GetHoldings(id);
-    player.edollars += (config_.utility_funcs.at(id))(holdings);
+    auto h = holdings.at(id);
+    player.edollars += (config_.utility_funcs.at(id))(h);
   }
 }
 
-std::vector<market::Transaction> Experiment::GetPeriodTransactions() {
-  return market_.GetTransactionHistory();
-}
-
-std::vector<RoundResult> Experiment::GetRoundResults() {
-  std::vector<RoundResult> results;
+std::vector<PlayerRoundResult> Experiment::GetRoundResults(
+    std::map<int, market::Holdings> holdings) {
+  std::vector<PlayerRoundResult> results;
   for (const auto& [id, player] : players_) {
-    auto holdings = market_.GetHoldings(id);
-    int utility = (config_.utility_funcs.at(id))(holdings);
-    return results.emplace_back(id, holdings, utility);
+    auto h = holdings.at(id);
+    int utility = (config_.utility_funcs.at(id))(h);
+    results.push_back({id, h, utility});
   }
+  return results;
 }
 
 std::vector<Payout> Experiment::GetPayouts() {
@@ -35,6 +40,10 @@ std::vector<Payout> Experiment::GetPayouts() {
     payouts.push_back(ToPayout(player, config_.eperdollars.at(id)));
   }
   return payouts;
+}
+
+ExperimentState Experiment::GetState() const {
+  return ExperimentState{round_, stage_, status_};
 }
 
 }  // namespace experiment
