@@ -2,7 +2,7 @@
 #define _EXPERIMENT_CONTROLLER_H_
 
 #include <memory>
-#include <numeric>
+#include <vector>
 
 #include <asio.hpp>
 
@@ -10,29 +10,46 @@
 #include "experiment/configuration.h"
 #include "experiment/controller_state.h"
 #include "experiment/event_manager.h"
-#include "market/ask.h"
-#include "market/bid.h"
+#include "experiment/player_round_result.h"
 #include "market/market.h"
 #include "market/offer_validity.h"
-#include "market/pausable_timer.h"
+#include "tools/pausable_timer.h"
 
 namespace experiment {
 
 class Controller {
  public:
-  Controller(asio::io_context& io, Configuration config, EventManager em);
+  Controller(asio::io_context& io, Configuration config, EventManager em,
+             std::vector<int> player_ids);
   void StartExperiment();
+  void EndExperiment();
   void StartRound();
   void EndRound();
-  void EndExperiment();
+  void StartReview();
+  void EndReview();
+  void StartPayouts();
   void Pause();
   void Resume();
   void ResetRound();
-  ControllerState GetState();
+
+  std::chrono::duration<float> GetTimeRemaining() const {
+    return timer_->GetTimeRemaining();
+  }
+  experiment::ExperimentState GetExperimentState() const {
+    return experiment_.GetState();
+  }
+  market::MarketState GetMarketState() const { return market_.GetState(); }
+  ControllerState GetState() const;
+  std::vector<experiment::PlayerRoundResult> GetCurrentResults() const {
+    return experiment_.GetRoundResults(market_.GetAllHoldings());
+  }
   market::OfferValidity TakeBid(int player_id, int price, int quantity);
   market::OfferValidity TakeAsk(int player_id, int price, int quantity);
   void RetractOffer(int unique_id);
+  void TakeName(int player_id, std::string name);
   std::vector<Payout> GetPayouts();
+  EventManager& GetEventManager() { return em_; }
+  const Configuration& GetConfiguration() const { return config_; }
 
  private:
   EventManager em_;
@@ -40,11 +57,11 @@ class Controller {
   market::Market market_;
   Experiment experiment_;
   Configuration config_;
-  std::unique_ptr<market::PausableTimer> timer_ = nullptr;
+  std::unique_ptr<tools::PausableTimer> timer_ = nullptr;
   asio::io_context& io_;
 
   template <typename T>
-  market::OfferValidity TakeOffer(int player_id, int price, int quantity);
+  void TakeOffer(T offer);
 };
 
 }  // namespace experiment

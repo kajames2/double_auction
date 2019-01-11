@@ -1,7 +1,32 @@
-Round Started
-Experiment Resumed
+Connected: 0
+Connected: 1
 Experiment Started
-
 Round Started
+Disconnected: 1
+Connected: 1
+Received bid.  Player ID: 0 Price: 30 Quantity: 1.  Evaluation: Valid
+Received ask.  Player ID: 1 Price: 50 Quantity: 1.  Evaluation: Valid
+Player 0 bought from 1: 1unit at a price of 30 each.
+Received ask.  Player ID: 1 Price: 30 Quantity: 1.  Evaluation: Valid
+Received bid.  Player ID: 0 Price: 40 Quantity: 1.  Evaluation: Valid
+Player 0 bought from 1: 1unit at a price of 40 each.
+Received ask.  Player ID: 1 Price: 20 Quantity: 1.  Evaluation: Valid
 Round Ended
+Round Results Started
+Received bid.  Player ID: 0 Price: 30 Quantity: 1.  Evaluation: MarketClosed
+Round Results Ended
+Round Started
+Received bid.  Player ID: 0 Price: 90 Quantity: 1.  Evaluation: Valid
+Received ask.  Player ID: 1 Price: 110 Quantity: 1.  Evaluation: Valid
+Received ask.  Player ID: 1 Price: 109 Quantity: 1.  Evaluation: Valid
+Received bid.  Player ID: 0 Price: 95 Quantity: 1.  Evaluation: Valid
+Player 0 bought from 1: 1unit at a price of 95 each.
+Received ask.  Player ID: 1 Price: 90 Quantity: 1.  Evaluation: Valid
+Player 0 bought from 1: 1unit at a price of 109 each.
+Received bid.  Player ID: 0 Price: 120 Quantity: 1.  Evaluation: Valid
+Received bid.  Player ID: 0 Price: 94 Quantity: 1.  Evaluation: InsufficientCash
+Round Ended
+Final Payments Determined
+Disconnected: 0
+Disconnected: 1
 Experiment Ended

@@ -1,83 +1,122 @@
+#include "comms/connection_manager.h"
+#include "comms/reconnector.h"
 #include "experiment/configuration.h"
 #include "experiment/controller.h"
 #include "experiment/event_manager.h"
-#include "experiment/logger.h"
+#include "server/client_message_processor.h"
+#include "server/logger.h"
+#include "server/message_sender.h"
+#include "server/outputter.h"
 
 #include <asio.hpp>
+#include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <thread>
 
 using namespace experiment;
 using namespace market;
 
-void SetLoggerToListen(Logger&, EventManager&);
-
-int main(int argc, char** argv) {
-  int n_players = 2;
+Configuration CreateConfiguration(int n_rounds, int n_players,
+                                  std::vector<int> player_ids) {
   std::vector<std::map<int, Holdings>> init_holdings;
 
-  for (int i = 0; i < 2; ++i) {
+  for (int i = 0; i < n_rounds; ++i) {
     std::map<int, Holdings> holdings;
-    for (int j = 0; j < n_players; ++j) {
-      holdings[j] = {300 + 10 * i, 5 + i};
+    for (int id : player_ids) {
+      holdings[id] = {300 + 10 * i, 5 + i};
     }
     init_holdings.push_back(holdings);
   }
 
   std::map<int, std::function<int(Holdings)>> utility_funcs;
   std::map<int, double> eperdollars;
-  for (int i = 0; i < n_players; ++i) {
-    utility_funcs[i] = [](Holdings h) { return h.cash + h.units * 100; };
-    eperdollars[i] = 1;
+  std::map<int, PlayerType> player_types;
+  for (int id : player_ids) {
+    utility_funcs[id] = [](Holdings h) { return h.cash + h.units * 100; };
+    eperdollars[id] = 1;
+    player_types[id] = id % 2 == 0 ? PlayerType::Buyer : PlayerType::Seller;
   }
 
   std::chrono::seconds round_time = std::chrono::minutes(1);
+  std::chrono::seconds review_time = std::chrono::seconds(30);
   Configuration config;
   config.init_holdings = init_holdings;
   config.eperdollars = eperdollars;
+  config.player_types = player_types;
   config.n_players = n_players;
   config.round_time = round_time;
+  config.review_time = review_time;
   config.utility_funcs = utility_funcs;
+  config.n_rounds = n_rounds;
 
-  EventManager controller_em;
-  Logger logger("log.txt");
-  SetLoggerToListen(logger, controller_em);
+  return config;
+}
+
+int main(int argc, char** argv) {
+  int n_players = 2;
 
   asio::io_context io;
-  std::thread tthread;
-  Controller controller(io, config, std::move(controller_em));
+  comms::ConnectionEventManager connection_em;
+
+  std::ofstream log_out("log.txt");
+  server::Logger logger(log_out);
+  HookupLogger(logger, connection_em);
+
+  comms::ConnectionManager cm(io, std::move(connection_em));
+  cm.StartAccepting();
+  auto tthread = std::thread([&] { io.run(); });
+  comms::Reconnector recon(cm);
+  comms::HookupReconnector(recon, cm.GetEventManager());
+
   while (true) {
     std::string command;
     std::cin >> command;
-    if (command == "status") {
-      std::cout << controller.GetState() << std::endl;
-    } else if (command == "start") {
-      controller.StartExperiment();
-      tthread = std::thread([&] { io.run(); });
-    } else if (command == "pause") {
+    if (command == "start" && cm.GetIDs().size() == n_players) {
+      break;
+    } else if (command == "reset") {
+      cm.StopAccepting();
+      cm.DisconnectAll();
+      cm.StartAccepting();
+    } else {
+      std::cout << "Current Connections: " << cm.GetIDs().size() << " --- Need "
+                << n_players << std::endl;
+    }
+  }
+  cm.FinalizeConnections();
+
+  std::vector<int> player_ids = cm.GetIDs();
+  int n_rounds = 2;
+  Configuration config = CreateConfiguration(n_rounds, n_players, player_ids);
+
+  EventManager controller_em;
+  HookupLogger(logger, controller_em);
+  
+  Controller controller(io, config, std::move(controller_em), player_ids);
+  
+  server::Outputter outputter(std::cerr, controller);
+  server::HookupOutputter(outputter, controller.GetEventManager());
+  
+  server::MessageSender mess(controller, cm);
+  server::HookupMessageSender(mess, cm.GetEventManager());
+  server::HookupMessageSender(mess, controller.GetEventManager());
+
+  server::ClientMessageProcessor proc(controller);
+  server::HookupClientMessageProcessor(proc, cm.GetEventManager());
+
+  controller.StartExperiment();
+
+  while (true) {
+    std::string command;
+    std::cin >> command;
+    if (command == "pause") {
       controller.Pause();
     } else if (command == "resume") {
       controller.Resume();
-    } else if (command == "bid") {
-      int player_id;
-      int price;
-      int quant;
-      std::cin >> player_id >> price >> quant;
-      auto val = controller.TakeBid(player_id, price, quant);
-      if (val != market::OfferValidity::kValid) std::cout << val << std::endl;
-    } else if (command == "ask") {
-      int player_id;
-      int price;
-      int quant;
-      std::cin >> player_id >> price >> quant;
-      auto val = controller.TakeAsk(player_id, price, quant);
-      if (val != market::OfferValidity::kValid) std::cout << val << std::endl;
-    } else if (command == "retract") {
-      int offer_id;
-      std::cin >> offer_id;
-      controller.RetractOffer(offer_id);
     } else if (command == "end") {
+      cm.DisconnectAll();
+      cm.StopAccepting();
       controller.EndExperiment();
       break;
     } else {
@@ -86,31 +125,5 @@ int main(int argc, char** argv) {
     std::cin.ignore();
   }
   tthread.join();
-}
-
-void SetLoggerToListen(Logger& log, EventManager& em) {
-  em.exp_start.connect(
-      [&log](const Configuration& c) { log.OnExperimentStarted(c); });
-  em.exp_end.connect([&log]() { log.OnExperimentEnded(); });
-  em.round_start.connect([&log]() { log.OnRoundStarted(); });
-  em.round_end.connect([&log]() { log.OnRoundEnded(); });
-  em.res_start.connect([&log]() { log.OnRoundResultsStarted(); });
-  em.res_end.connect([&log]() { log.OnRoundResultsEnded(); });
-  em.bid_accept.connect(
-      [&log](market::Bid bid, const std::vector<Transaction>& trans) {
-        log.OnBidAccepted(bid, trans);
-      });
-  em.bid_reject.connect([&log](market::Bid bid, OfferValidity ov) {
-    log.OnBidRejected(bid, ov);
-  });
-  em.ask_accept.connect(
-      [&log](market::Ask ask, const std::vector<Transaction>& trans) {
-        log.OnAskAccepted(ask, trans);
-      });
-  em.ask_reject.connect([&log](market::Ask ask, OfferValidity ov) {
-    log.OnAskRejected(ask, ov);
-  });
-  em.paused.connect([&log]() { log.OnPaused(); });
-  em.resumed.connect([&log]() { log.OnResumed(); });
-  em.payments.connect([&log]() { log.OnPaymentsCalculated(); });
+  log_out.close();
 }

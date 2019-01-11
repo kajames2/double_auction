@@ -2,12 +2,13 @@
 #define _EXPERIMENT_EVENT_MANAGER_H_
 
 #include "experiment/configuration.h"
+#include "experiment/payout.h"
 #include "market/ask.h"
 #include "market/bid.h"
 #include "market/offer_validity.h"
 #include "market/transaction.h"
 
-#include <signals2.hpp>
+#include <boost/signals2.hpp>
 #include <vector>
 
 namespace experiment {
@@ -18,19 +19,17 @@ class EventManager {
   boost::signals2::signal<void()> exp_end;
   boost::signals2::signal<void()> round_start;
   boost::signals2::signal<void()> round_end;
-  boost::signals2::signal<void()> res_start;
-  boost::signals2::signal<void()> res_end;
-  boost::signals2::signal<void(market::Bid,
-                               const std::vector<market::Transaction>&)>
-      bid_accept;
-  boost::signals2::signal<void(market::Bid, market::OfferValidity)> bid_reject;
-  boost::signals2::signal<void(market::Ask,
-                               const std::vector<market::Transaction>&)>
-      ask_accept;
-  boost::signals2::signal<void(market::Ask, market::OfferValidity)> ask_reject;
+  boost::signals2::signal<void()> review_start;
+  boost::signals2::signal<void()> review_end;
+  boost::signals2::signal<void(market::Bid, market::OfferValidity)> bid_receive;
+  boost::signals2::signal<void(market::Ask, market::OfferValidity)> ask_receive;
+  boost::signals2::signal<void(int id)> offer_retract;
+  boost::signals2::signal<void(const std::vector<market::Transaction>&)>
+      transaction;
+  boost::signals2::signal<void(int id, std::string name)> name_taken;
   boost::signals2::signal<void()> paused;
   boost::signals2::signal<void()> resumed;
-  boost::signals2::signal<void()> payments;
+  boost::signals2::signal<void(const std::vector<experiment::Payout>&)> payments;
 };
 
 }  // namespace experiment

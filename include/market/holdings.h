@@ -1,7 +1,7 @@
 #ifndef _MARKET_HOLDINGS_H_
 #define _MARKET_HOLDINGS_H_
 
-#include <ostream>
+#include <iostream>
 
 #include "market/transaction.h"
 #include "market/bid.h"
@@ -25,7 +25,8 @@ Holdings ToSellHoldings(Transaction t);
 Holdings ToHoldings(Bid bid);
 Holdings ToHoldings(Ask ask);
 
-std::ostream& operator<<(std::ostream& os, const Holdings h);
+std::ostream& operator<<(std::ostream& os, const Holdings& h);
+std::istream& operator>>(std::istream& is, Holdings& h);
 }  // namespace market
 
 #endif  // _MARKET_HOLDINGS_H_

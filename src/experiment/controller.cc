@@ -1,5 +1,11 @@
 #include "experiment/controller.h"
 
+#include <vector>
+#include <numeric>
+
+#include "market/ask.h"
+#include "market/bid.h"
+
 namespace experiment {
 
 std::vector<int> Range(int n) {
@@ -8,25 +14,29 @@ std::vector<int> Range(int n) {
   return vec;
 }
 
+bool IsAcceptingOffers(const Experiment& exp) {
+  return exp.GetStage() == Stage::Round && exp.GetStatus() == Status::Running;
+}
+
 Controller::Controller(asio::io_context& io, Configuration config,
-                       EventManager em)
+                       EventManager em, std::vector<int> player_ids)
     : em_(std::move(em)),
       io_(io),
       config_(config),
-      experiment_(config, Range(config.n_players)) {}
+      experiment_(config, player_ids) {}
 
 void Controller::StartExperiment() {
-  experiment_.SetRound(1);
-  StartRound();
-  Resume();
+  experiment_.SetRound(0);
   em_.exp_start(config_);
+  StartRound();
 }
 
 void Controller::StartRound() {
   experiment_.SetStage(Stage::Round);
-  market_ = market::Market(config_.init_holdings[1]);
-  timer_ = std::make_unique<market::PausableTimer>(
-      io_, config_.round_time, [this](const asio::error_code& e) {
+  experiment_.SetStatus(Status::Running);
+  market_ = market::Market(config_.init_holdings[experiment_.GetRound()]);
+  timer_ = std::make_unique<tools::PausableTimer>(
+      io_, config_.round_time, [this](const std::error_code& e) {
         if (!e) EndRound();
       });
   offer_id_ = 0;
@@ -35,10 +45,33 @@ void Controller::StartRound() {
 
 void Controller::EndRound() {
   experiment_.AddRoundEarnings(market_.GetAllHoldings());
+  em_.round_end();
+  if (experiment_.GetRound() == config_.n_rounds - 1) {
+    StartPayouts();
+  } else {
+    StartReview();
+  }
+}
+
+void Controller::StartReview() {
+  timer_ = std::make_unique<tools::PausableTimer>(
+      io_, config_.review_time, [this](const std::error_code& e) {
+        if (!e) EndReview();
+      });
+  experiment_.SetStage(Stage::Review);
+  em_.review_start();
+}
+
+void Controller::EndReview() {
+  em_.review_end();
   experiment_.NextRound();
   StartRound();
-  em_.round_end();
 }
+
+void Controller::StartPayouts() {
+  experiment_.SetStage(Stage::Payouts);
+  em_.payments(GetPayouts());
+};
 
 void Controller::EndExperiment() {
   experiment_.SetStage(Stage::End);
@@ -61,42 +94,71 @@ void Controller::Resume() {
 
 void Controller::ResetRound() { StartRound(); }
 
-ControllerState Controller::GetState() {
+ControllerState Controller::GetState() const {
   return {experiment_.GetState(), timer_->GetTimeRemaining(),
           market_.GetState()};
 }
 
 template <typename T>
-market::OfferValidity Controller::TakeOffer(int player_id, int price,
-                                            int quantity) {
-  double timestamp = timer_->GetTimeElapsed().count();
-  int unique_id = offer_id_;
-  T offer{unique_id, player_id, timestamp, price, quantity};
-  auto validity = market_.CheckOffer(offer);
-  if (validity == market::OfferValidity::kValid) {
-    auto transactions = market_.AcceptOffer(offer);
-    ++offer_id_;    
-  }
-  return validity;
+void Controller::TakeOffer(T offer) {
+  auto transactions = market_.AcceptOffer(offer);
+  em_.transaction(transactions);
+  ++offer_id_;
 }
 
 market::OfferValidity Controller::TakeBid(int player_id, int price,
                                           int quantity) {
-  return TakeOffer<market::Bid>(player_id, price, quantity);
+  double timestamp = timer_->GetTimeElapsed().count();
+  int unique_id = offer_id_;
+  market::Bid offer{unique_id, player_id, timestamp, price, quantity};
+  market::OfferValidity validity;
+  if (!IsAcceptingOffers(experiment_)) {
+    validity = market::OfferValidity::kMarketClosed;
+  } else if (config_.player_types.at(player_id) == PlayerType::Seller) {
+    validity = market::OfferValidity::kInvalidPlayerTypeOffer;
+  } else {
+    validity = market_.CheckOffer(offer);
+  }
+  em_.bid_receive(offer, validity);
+  if (validity == market::OfferValidity::kValid) {
+    TakeOffer(offer);
+  }
+  return validity;
 }
 
 market::OfferValidity Controller::TakeAsk(int player_id, int price,
                                           int quantity) {
-  return TakeOffer<market::Ask>(player_id, price, quantity);
+  double timestamp = timer_->GetTimeElapsed().count();
+  int unique_id = offer_id_;
+  market::Ask offer{unique_id, player_id, timestamp, price, quantity};
+  market::OfferValidity validity;
+  if (!IsAcceptingOffers(experiment_)) {
+    validity = market::OfferValidity::kMarketClosed;
+  } else if (config_.player_types.at(player_id) == PlayerType::Buyer) {
+    validity = market::OfferValidity::kInvalidPlayerTypeOffer;
+  } else {
+    validity = market_.CheckOffer(offer);
+  }
+  em_.ask_receive(offer, validity);
+  if (validity == market::OfferValidity::kValid) {
+    TakeOffer(offer);
+  }
+  return validity;
 }
+
+void Controller::TakeName(int player_id, std::string name) {
+  experiment_.SetName(player_id, name);
+  em_.name_taken(player_id, name);
+}
+
 
 void Controller::RetractOffer(int unique_id) {
   market_.RetractOffer(unique_id);
+  em_.offer_retract(unique_id);
 }
 
 std::vector<Payout> Controller::GetPayouts() {
-  em_.payments();
   return experiment_.GetPayouts();
-};
+}
 
 }  // namespace experiment

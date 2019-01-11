@@ -2,7 +2,7 @@
 #define _MARKET_MARKET_STATE_
 
 #include <map>
-#include <ostream>
+#include <iostream>
 #include <vector>
 
 #include "market/ask.h"
@@ -20,7 +20,9 @@ struct MarketState {
   OfferQueue<Ask> ask_queue;
 };
 
-std::ostream& operator<<(std::ostream& os, const MarketState state);
+void PrettyPrint(std::ostream& os, const MarketState& state);
+std::ostream& operator<<(std::ostream& os, const MarketState& state);
+std::istream& operator>>(std::istream& is, MarketState& state);
 }  // namespace market
 
 #endif  // _MARKET_MARKET_STATE_

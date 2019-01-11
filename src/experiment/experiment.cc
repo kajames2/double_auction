@@ -14,7 +14,7 @@ Experiment::Experiment(Configuration config, std::vector<int> player_ids)
 
 void Experiment::SetRound(int n) { round_ = n; }
 
-void Experiment::NextRound() { SetRound(round_ + 1); }
+void Experiment::NextRound() { round_ += 1; }
 
 void Experiment::AddRoundEarnings(std::map<int, market::Holdings> holdings) {
   for (auto& [id, player] : players_) {
@@ -24,7 +24,7 @@ void Experiment::AddRoundEarnings(std::map<int, market::Holdings> holdings) {
 }
 
 std::vector<PlayerRoundResult> Experiment::GetRoundResults(
-    std::map<int, market::Holdings> holdings) {
+    std::map<int, market::Holdings> holdings) const {
   std::vector<PlayerRoundResult> results;
   for (const auto& [id, player] : players_) {
     auto h = holdings.at(id);

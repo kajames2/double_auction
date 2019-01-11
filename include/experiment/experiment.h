@@ -20,11 +20,15 @@ class Experiment {
   void NextRound();
   void AddRoundEarnings(std::map<int, market::Holdings>);
   std::vector<PlayerRoundResult> GetRoundResults(
-      std::map<int, market::Holdings> holdings);
+      std::map<int, market::Holdings> holdings) const;
   std::vector<Payout> GetPayouts();
   ExperimentState GetState() const;
   void SetStatus(Status status) { status_ = status; }
   void SetStage(Stage stage) { stage_ = stage; }
+  Status GetStatus() const { return status_; }
+  Stage GetStage() const { return stage_; }
+  int GetRound() const { return round_; }
+  void SetName(int id, std::string name) { players_.at(id).name = name; }
 
  private:
   int round_;

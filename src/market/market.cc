@@ -3,7 +3,6 @@
 #include <ostream>
 #include <vector>
 
-#include "market/offer.h"
 #include "market/transaction.h"
 
 namespace market {

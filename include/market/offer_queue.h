@@ -12,13 +12,14 @@ class OfferQueue {
   void push_back(T offer);
   void RetractOffer(int id);
   void pop_back() { offers_.pop_back(); }
-  void clear() { offers_.clear; }
+  void clear() { offers_.clear(); }
 
   auto begin() const { return offers_.begin(); }
   auto end() const { return offers_.end(); }
-  auto rbegin() const {return offers_.rbegin();}
-  auto rend() const {return offers_.rend();}
+  auto rbegin() const { return offers_.rbegin(); }
+  auto rend() const { return offers_.rend(); }
 
+  std::size_t size() const { return offers_.size(); }
   bool empty() const { return offers_.empty(); }
   T GetStandingOffer() const { return offers_.back(); }
   std::vector<T> GetOffers(int player_id) const;

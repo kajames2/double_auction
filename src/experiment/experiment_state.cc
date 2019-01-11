@@ -2,10 +2,17 @@
 
 namespace experiment {
 
-std::ostream& operator<<(std::ostream& os, ExperimentState state) {
+void PrettyPrint(std::ostream& os, ExperimentState state) {
   os << "Status: " << state.status << '\n';
   os << "Stage: " << state.stage << '\n';
-  return os << "Round " << state.round;
+  os << "Round " << state.round;
 }
 
+std::ostream& operator<<(std::ostream& os, ExperimentState state) {
+  return os << state.round << ' ' << state.status << ' ' << state.stage << ' ';
+}
+
+std::istream& operator>>(std::istream& is, ExperimentState& state) {
+  return is >> state.round >> state.status >> state.stage;
+}
 }  // namespace experiment

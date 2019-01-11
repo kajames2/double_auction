@@ -1,7 +1,7 @@
 #ifndef _MARKET_TRANSACTION_H_
 #define _MARKET_TRANSACTION_H_
 
-#include <ostream>
+#include <iostream>
 #include <cmath>
 
 struct Bid;
@@ -18,7 +18,8 @@ struct Transaction {
 };
 
 Transaction MakeTransaction(double time, Bid bid, Ask ask);
-std::ostream& operator<<(std::ostream& os, const Transaction t);
+std::ostream& operator<<(std::ostream& os, const Transaction& t);
+std::istream& operator>>(std::istream& is, Transaction& t);
 
 }  // namespace market
 

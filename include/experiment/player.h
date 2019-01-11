@@ -4,8 +4,6 @@
 #include <string>
 #include <cmath>
 
-#include "experiment/payout.h"
-
 namespace experiment {
 
 struct Player {

@@ -2,7 +2,7 @@
 #define _EXPERIMENT_CONTROLLER_STATE_H_
 
 #include <chrono>
-#include <ostream>
+#include <iostream>
 
 #include "experiment/experiment_state.h"
 #include "market/market_state.h"
@@ -15,7 +15,8 @@ struct ControllerState {
   market::MarketState market_state;
 };
 
-std::ostream& operator<<(std::ostream& os, ControllerState state);
+std::ostream& operator<<(std::ostream& os, const ControllerState& state);
+std::istream& operator>>(std::istream& is, ControllerState& state);
 
 }  // namespace experiment
 

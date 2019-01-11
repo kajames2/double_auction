@@ -1,16 +1,16 @@
-* Core
+* DONE Core
 ** DONE Double Auction
 *** DONE Accept bids/asks
 *** DONE Check validity of bids/asks
 *** DONE Create transactions
 *** DONE Record transaction history 
-** Players & Earnings
-** Utility functions
-** Experiment Driver
+** DONE Players & Earnings
+** DONE Utility functions
+** DONE Experiment Driver
 *** Plaintext reader?
-* Communication
-Use boost::asio
-** Connection
+* DONE Communication
+** DONE Use boost::asio
+** DONE Connection
 *** Timeout if failure
 ** Server -> Clients
 *** Market updates
@@ -21,7 +21,7 @@ Use boost::asio
 *** Bids/Asks
 *** Retractions
 *** Names
-* Client GUI
+* TODO Client GUI
 Use QT
 ** Base Screen
 *** Market Queue
@@ -31,24 +31,24 @@ Use QT
 *** Current Status
 ** Earnings Screen
 ** Names
-* Server GUI
+* TODO Server GUI
 ** Start/Pause/End
 ** Current Earnings
 ** Current Market Status
 ** Edgeworth graphs
-* Output
+* TODO Output
 ** CSV
 *** Bids/Asks/Retractions
 *** Transactions
 *** End States
 ** Payout File
 * Configuration File
-** Endowments
-** Exchange rates
-** Period length
-** number rounds
+** DONE Endowments
+** DONE Exchange rates
+** DONE Period length
+** DONE number rounds
 ** Player position designations (buyer/seller/trader)
-* Binaries
-- Get windows set up with boost libraries
-- Read up on how to make windows binaries
+* DONE Binaries
+** DONE Get windows set up with boost libraries
+** DONE Read up on how to make windows binaries
 * Documentation

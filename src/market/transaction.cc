@@ -1,9 +1,9 @@
 #include "market/transaction.h"
 
-#include <ostream>
+#include <iostream>
 
-#include "market/bid.h"
 #include "market/ask.h"
+#include "market/bid.h"
 
 namespace market {
 
@@ -18,9 +18,13 @@ Transaction MakeTransaction(double time, Bid bid, Ask ask) {
   return Transaction{time, bid.player_id, ask.player_id, price, quantity};
 }
 
-std::ostream& operator<<(std::ostream& os, const Transaction t) {
-  return os << t.buyer_id << "\t" << t.seller_id << "\t" << t.price << "\t"
-            << t.quantity << "\t" << t.timestamp;
+std::ostream& operator<<(std::ostream& os, const Transaction& t) {
+  return os << t.buyer_id << " " << t.seller_id << " " << t.price << " "
+            << t.quantity << " " << t.timestamp;
 }
 
+std::istream& operator>>(std::istream& is, Transaction& t) {
+  return is >> t.buyer_id >> t.seller_id >> t.price >> t.quantity >>
+         t.timestamp;
+}
 }  // namespace market
