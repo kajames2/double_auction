@@ -3,7 +3,7 @@
 namespace server {
 
 std::string GetOutputLineHeader() {
-  return "Event,Round,TimeRemaining,PlayerID,Cash,Units,OfferID,Price,Quantity,"
+  return "Event,Round,Time,PlayerID,Cash,Units,OfferID,Price,Quantity,"
          "BuyerID,SellerID,Utility";
 }
 
@@ -69,8 +69,8 @@ void Outputter::OnTransactions(const std::vector<market::Transaction>& trans) {
 
 void Outputter::Write(std::string event) {
   out_line.event = event;
-  out_line.round = con_.GetExperimentState().round;
-  out_line.time_rem = con_.GetTimeRemaining().count();
+  out_line.round = con_.GetExperimentState().round + 1;
+  out_line.time_rem = con_.GetTimeElapsed().count();
   writer << out_line << std::endl;
   out_line.Reset();
 }

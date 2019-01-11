@@ -100,10 +100,10 @@ ControllerState Controller::GetState() const {
 }
 
 template <typename T>
-void Controller::TakeOffer(T offer) {
+std::vector<market::Transaction> Controller::TakeOffer(T offer) {
   auto transactions = market_.AcceptOffer(offer);
-  em_.transaction(transactions);
   ++offer_id_;
+  return transactions;
 }
 
 market::OfferValidity Controller::TakeBid(int player_id, int price,
@@ -119,9 +119,13 @@ market::OfferValidity Controller::TakeBid(int player_id, int price,
   } else {
     validity = market_.CheckOffer(offer);
   }
-  em_.bid_receive(offer, validity);
+  std::vector<market::Transaction> transactions;
   if (validity == market::OfferValidity::kValid) {
-    TakeOffer(offer);
+    transactions = TakeOffer(offer);
+  }
+  em_.bid_receive(offer, validity);
+  if (!transactions.empty()) {
+    em_.transaction(transactions);
   }
   return validity;
 }
@@ -139,9 +143,13 @@ market::OfferValidity Controller::TakeAsk(int player_id, int price,
   } else {
     validity = market_.CheckOffer(offer);
   }
-  em_.ask_receive(offer, validity);
+  std::vector<market::Transaction> transactions;
   if (validity == market::OfferValidity::kValid) {
-    TakeOffer(offer);
+    transactions = TakeOffer(offer);
+  }
+  em_.ask_receive(offer, validity);
+  if (!transactions.empty()) {
+    em_.transaction(transactions);
   }
   return validity;
 }

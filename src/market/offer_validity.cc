@@ -19,7 +19,7 @@ bool Improving(Bid bid, const MarketState& state) {
 
 template <typename T>
 Holdings NetHoldings(const std::vector<T>& offers) {
-  Holdings net;
+  Holdings net{0,0};
   for (const auto& offer : offers) {
     net += ToHoldings(offer);
   }

@@ -25,9 +25,9 @@ void Logger::OnOfferRetract(int id) {
 
 void Logger::OnTransactions(const std::vector<market::Transaction>& trans) {
   for (const auto& tran : trans) {
-    Log("Player " + std::to_string(tran.buyer_id) + " bought from " +
+    Log("Player #" + std::to_string(tran.buyer_id) + " bought from #" +
         std::to_string(tran.seller_id) + ": " + std::to_string(tran.quantity) +
-        "unit at a price of " + std::to_string(tran.price) + " each.");
+        " unit at a price of " + std::to_string(tran.price) + " each.");
   }
 }
 

@@ -78,7 +78,6 @@ int main(int argc, char* argv[]) {
         std::cin >> name;
         std::cin.ignore();
         sender.SubmitName(name);
-        break;
       }
     }
     t.join();

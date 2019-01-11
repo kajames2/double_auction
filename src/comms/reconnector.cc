@@ -5,10 +5,12 @@
 namespace comms {
 
 void Reconnector::OnError(int id, std::error_code e) {
-  if (finalized && e == asio::error::eof) {
+  if (e == asio::error::eof) {
     cm_.Disconnect(id);
-    cm_.Accept(id);
-  }
+    if (finalized) {
+      cm_.Accept(id);
+    }
+  } 
 }
 
 void Reconnector::OnFinalize(std::vector<int> ids) { finalized = true; }

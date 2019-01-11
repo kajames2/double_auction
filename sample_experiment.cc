@@ -60,8 +60,7 @@ int main(int argc, char** argv) {
   asio::io_context io;
   comms::ConnectionEventManager connection_em;
 
-  std::ofstream log_out("log.txt");
-  server::Logger logger(log_out);
+  server::Logger logger(std::cerr);
   HookupLogger(logger, connection_em);
 
   comms::ConnectionManager cm(io, std::move(connection_em));
@@ -94,8 +93,9 @@ int main(int argc, char** argv) {
   HookupLogger(logger, controller_em);
   
   Controller controller(io, config, std::move(controller_em), player_ids);
-  
-  server::Outputter outputter(std::cerr, controller);
+
+  std::ofstream out_file("results.csv");
+  server::Outputter outputter(out_file, controller);
   server::HookupOutputter(outputter, controller.GetEventManager());
   
   server::MessageSender mess(controller, cm);
@@ -125,5 +125,5 @@ int main(int argc, char** argv) {
     std::cin.ignore();
   }
   tthread.join();
-  log_out.close();
+  out_file.close();
 }

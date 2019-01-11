@@ -35,6 +35,9 @@ class Controller {
   std::chrono::duration<float> GetTimeRemaining() const {
     return timer_->GetTimeRemaining();
   }
+  std::chrono::duration<float> GetTimeElapsed() const {
+    return timer_->GetTimeElapsed();
+  }
   experiment::ExperimentState GetExperimentState() const {
     return experiment_.GetState();
   }
@@ -61,7 +64,7 @@ class Controller {
   asio::io_context& io_;
 
   template <typename T>
-  void TakeOffer(T offer);
+  std::vector<market::Transaction> TakeOffer(T offer);
 };
 
 }  // namespace experiment
