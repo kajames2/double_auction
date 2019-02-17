@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 
 #include "experiment.h"
 #include "experiment/configuration.h"
@@ -19,7 +19,7 @@ namespace experiment {
 
 class Controller {
  public:
-  Controller(asio::io_context& io, Configuration config, EventManager em,
+  Controller(boost::asio::io_context& io, Configuration config, EventManager em,
              std::vector<int> player_ids);
   void StartExperiment();
   void EndExperiment();
@@ -61,7 +61,7 @@ class Controller {
   Experiment experiment_;
   Configuration config_;
   std::unique_ptr<tools::PausableTimer> timer_ = nullptr;
-  asio::io_context& io_;
+  boost::asio::io_context& io_;
 
   template <typename T>
   std::vector<market::Transaction> TakeOffer(T offer);

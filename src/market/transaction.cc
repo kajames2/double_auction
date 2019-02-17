@@ -15,16 +15,16 @@ Transaction MakeTransaction(double time, Bid bid, Ask ask) {
     price = bid.unique_id < ask.unique_id ? bid.price : ask.price;
   }
   int quantity = std::min(bid.quantity, ask.quantity);
-  return Transaction{time, bid.player_id, ask.player_id, price, quantity};
+  return Transaction{time, bid.player_id, ask.player_id, price, quantity, bid.unique_id, ask.unique_id};
 }
 
 std::ostream& operator<<(std::ostream& os, const Transaction& t) {
   return os << t.buyer_id << " " << t.seller_id << " " << t.price << " "
-            << t.quantity << " " << t.timestamp;
+            << t.quantity << " " << t.bid_id << " " << t.ask_id << " " << t.timestamp;
 }
 
 std::istream& operator>>(std::istream& is, Transaction& t) {
-  return is >> t.buyer_id >> t.seller_id >> t.price >> t.quantity >>
+  return is >> t.buyer_id >> t.seller_id >> t.price >> t.quantity >> t.bid_id >> t.ask_id >> 
          t.timestamp;
 }
 }  // namespace market

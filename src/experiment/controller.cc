@@ -1,7 +1,7 @@
 #include "experiment/controller.h"
 
-#include <vector>
 #include <numeric>
+#include <vector>
 
 #include "market/ask.h"
 #include "market/bid.h"
@@ -18,7 +18,7 @@ bool IsAcceptingOffers(const Experiment& exp) {
   return exp.GetStage() == Stage::Round && exp.GetStatus() == Status::Running;
 }
 
-Controller::Controller(asio::io_context& io, Configuration config,
+Controller::Controller(boost::asio::io_context& io, Configuration config,
                        EventManager em, std::vector<int> player_ids)
     : em_(std::move(em)),
       io_(io),
@@ -36,7 +36,7 @@ void Controller::StartRound() {
   experiment_.SetStatus(Status::Running);
   market_ = market::Market(config_.init_holdings[experiment_.GetRound()]);
   timer_ = std::make_unique<tools::PausableTimer>(
-      io_, config_.round_time, [this](const std::error_code& e) {
+      io_, config_.round_time, [this](const boost::system::error_code& e) {
         if (!e) EndRound();
       });
   offer_id_ = 0;
@@ -55,7 +55,7 @@ void Controller::EndRound() {
 
 void Controller::StartReview() {
   timer_ = std::make_unique<tools::PausableTimer>(
-      io_, config_.review_time, [this](const std::error_code& e) {
+      io_, config_.review_time, [this](const boost::system::error_code& e) {
         if (!e) EndReview();
       });
   experiment_.SetStage(Stage::Review);
@@ -158,7 +158,6 @@ void Controller::TakeName(int player_id, std::string name) {
   experiment_.SetName(player_id, name);
   em_.name_taken(player_id, name);
 }
-
 
 void Controller::RetractOffer(int unique_id) {
   market_.RetractOffer(unique_id);

@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <string>
+#include <ostream>
 
 #include "experiment/player.h"
 
@@ -15,6 +16,7 @@ struct Payout {
 };
 
 Payout ToPayout(const Player& p, double eperdollar);
+std::ostream& operator<<(std::ostream& os, const Payout& p);
 
 }  //  namespace experiment
 

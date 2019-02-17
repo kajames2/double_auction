@@ -1,7 +1,7 @@
 #ifndef _COMMS_CONNECTION_MANAGER_H_
 #define _COMMS_CONNECTION_MANAGER_H_
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <deque>
 #include <map>
 #include <memory>
@@ -13,7 +13,7 @@ namespace comms {
 
 class ConnectionManager {
  public:
-  ConnectionManager(asio::io_context& io_context, ConnectionEventManager em,
+  ConnectionManager(boost::asio::io_context& io_context, ConnectionEventManager em,
                     int port = 12345);
 
   void Disconnect(int id);
@@ -40,9 +40,9 @@ class ConnectionManager {
   Message message_;
   std::deque<int> to_accept_ids;
   std::map<int, std::unique_ptr<Connection>> participants_;
-  asio::ip::tcp::acceptor acceptor_;
-  asio::ip::tcp::endpoint endpoint_;
-  asio::ip::tcp::socket socket_;
+  boost::asio::ip::tcp::acceptor acceptor_;
+  boost::asio::ip::tcp::endpoint endpoint_;
+  boost::asio::ip::tcp::socket socket_;
   ConnectionEventManager em_;
   bool is_accepting_ = false;
   bool is_accepting_new_connections_ = false;

@@ -1,7 +1,7 @@
 #ifndef _TOOLS_PAUSABLE_TIMER_H_
 #define _TOOLS_PAUSABLE_TIMER_H_
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <chrono>
 #include <functional>
 #include <iostream>
@@ -10,8 +10,8 @@ namespace tools {
 
 class PausableTimer {
  public:
-  PausableTimer(asio::io_context& io, std::chrono::seconds duration,
-                std::function<void(const std::error_code&)> callback);
+  PausableTimer(boost::asio::io_context& io, std::chrono::seconds duration,
+                std::function<void(const boost::system::error_code&)> callback);
   std::chrono::duration<float> GetTimeRemaining() const;
   std::chrono::duration<float> GetTimeElapsed() const;
   void Reset();
@@ -19,13 +19,13 @@ class PausableTimer {
   void Resume();
 
  private:
-  void Tick(const std::error_code& e);
+  void Tick(const boost::system::error_code& e);
 
-  asio::steady_timer timer_;
+  boost::asio::steady_timer timer_;
   std::chrono::duration<float> time_remaining_;
   std::chrono::duration<float> duration_;
   std::chrono::milliseconds interval_;
-  std::function<void(const std::error_code&)> callback_;
+  std::function<void(const boost::system::error_code&)> callback_;
   bool is_running_ = true;
   bool done_ = false;
 };

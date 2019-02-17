@@ -10,7 +10,7 @@ void PrettyPrint(std::ostream& os, const MarketState& state) {
     os << pair.first << '\t' << pair.second << std::endl;
   }
   os << std::endl << "Transactions:" << std::endl;
-  os << "buyer\tseller\tprice\tquant\ttime\n";
+  os << "buyer\tseller\tprice\tquant\tbID\taID\ttime\n";
   for (auto t : state.transaction_history) {
     os << t << std::endl;
   }

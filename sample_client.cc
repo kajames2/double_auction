@@ -1,4 +1,4 @@
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <cstdlib>
 #include <deque>
 #include <iostream>
@@ -11,7 +11,7 @@
 #include "client/server_message_processor.h"
 #include "client/state.h"
 
-using asio::ip::tcp;
+using boost::asio::ip::tcp;
 using namespace client;
 
 int main(int argc, char* argv[]) {
@@ -21,12 +21,12 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    asio::io_context io_context;
+    boost::asio::io_context io_context;
 
     tcp::resolver resolver(io_context);
     auto endpoints = resolver.resolve(argv[1], "12345");
     tcp::socket socket(io_context);
-    asio::connect(socket, endpoints);
+    boost::asio::connect(socket, endpoints);
 
     EventManager em;
     State state;

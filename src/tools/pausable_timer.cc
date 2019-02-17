@@ -3,14 +3,14 @@
 namespace tools {
 
 PausableTimer::PausableTimer(
-    asio::io_context& io, std::chrono::seconds duration,
-    std::function<void(const std::error_code&)> callback)
+    boost::asio::io_context& io, std::chrono::seconds duration,
+    std::function<void(const boost::system::error_code&)> callback)
     : timer_(io, std::chrono::milliseconds(50)),
       callback_(callback),
       duration_(duration),
       time_remaining_(duration),
       interval_(std::chrono::milliseconds(50)) {
-  timer_.async_wait([this](const std::error_code& e) { Tick(e); });
+  timer_.async_wait([this](const boost::system::error_code& e) { Tick(e); });
 }
 
 std::chrono::duration<float> PausableTimer::GetTimeRemaining() const {
@@ -33,8 +33,8 @@ void PausableTimer::Pause() { is_running_ = false; }
 
 void PausableTimer::Resume() { is_running_ = true; }
 
-void PausableTimer::Tick(const std::error_code& e) {
-  if (e == asio::error::operation_aborted) {
+void PausableTimer::Tick(const boost::system::error_code& e) {
+  if (e == boost::asio::error::operation_aborted) {
     return;
   }
   if (is_running_) {
@@ -46,7 +46,7 @@ void PausableTimer::Tick(const std::error_code& e) {
     done_ = true;
   } else {
     timer_.expires_after(interval_);
-    timer_.async_wait([this](const std::error_code& e) { Tick(e); });
+    timer_.async_wait([this](const boost::system::error_code& e) { Tick(e); });
   }
 }
 

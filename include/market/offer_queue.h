@@ -2,6 +2,7 @@
 #define _MARKET_OFFER_QUEUE_H_
 
 #include <algorithm>
+#include <cassert>
 #include <vector>
 
 namespace market {
@@ -11,7 +12,10 @@ class OfferQueue {
  public:
   void push_back(T offer);
   void RetractOffer(int id);
-  void pop_back() { offers_.pop_back(); }
+  void pop_back() {
+    assert(offers_.size() > 0);
+    offers_.pop_back();
+  }
   void clear() { offers_.clear(); }
 
   auto begin() const { return offers_.begin(); }

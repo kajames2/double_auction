@@ -39,7 +39,7 @@ class Logger {
   void OnPaymentsCalculated(const std::vector<experiment::Payout>& payouts) {
     Log("Final Payments Determined");
   }
-
+  
   void OnConnection(int id) { Log("Connected: " + std::to_string(id)); }
   void OnDisconnection(int id) { Log("Disconnected: " + std::to_string(id)); }
 

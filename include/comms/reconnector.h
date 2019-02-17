@@ -4,7 +4,8 @@
 #include "comms/connection_manager.h"
 #include "comms/connection_event_manager.h"
 
-#include <system_error>
+#include <boost/asio/error.hpp>
+
 #include <string>
 #include <vector>
 
@@ -13,7 +14,7 @@ namespace comms {
 class Reconnector {
  public:
   Reconnector(ConnectionManager& cm) : cm_(cm) {}
-  void OnError(int id, std::error_code);
+  void OnError(int id, boost::system::error_code);
   void OnFinalize(std::vector<int> ids);
   
  private:

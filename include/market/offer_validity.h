@@ -19,9 +19,6 @@ enum class OfferValidity {
   kInvalidPlayerTypeOffer
 };
 
-template <typename T>
-OfferValidity CheckOffer(T offer, const MarketState& market);
-
 std::ostream& operator<<(std::ostream& os, OfferValidity ov);
 std::istream& operator>>(std::istream& is, OfferValidity& ov);
 

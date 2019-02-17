@@ -2,11 +2,11 @@
 
 namespace server {
 
-MessageSender::MessageSender(const experiment::Controller& con,
-                             comms::ConnectionManager& cm)
+MessageSender::MessageSender(const experiment::Controller &con,
+                             comms::ConnectionManager &cm)
     : con_(con), cm_(cm) {}
 
-void MessageSender::OnExperimentStarted(const experiment::Configuration& c) {
+void MessageSender::OnExperimentStarted(const experiment::Configuration &c) {
   for (int id : cm_.GetIDs()) {
     SendExpStart(id, c);
   }
@@ -19,7 +19,10 @@ void MessageSender::OnRoundStarted() {
   SendState();
 }
 void MessageSender::OnRoundEnded() { cm_.DeliverAll("ROUNDENDED"); }
-void MessageSender::OnReviewStarted() { cm_.DeliverAll("REVIEWSTARTED"); }
+void MessageSender::OnReviewStarted() {
+  cm_.DeliverAll("REVIEWSTARTED");
+  SendState();
+}
 void MessageSender::OnReviewEnded() { cm_.DeliverAll("REVIEWENDED"); }
 
 void MessageSender::OnBidReceived(market::Bid bid, market::OfferValidity ov) {
@@ -42,13 +45,25 @@ void MessageSender::OnAskReceived(market::Ask ask, market::OfferValidity ov) {
   }
 }
 
+void MessageSender::OnTransactions(
+    const std::vector<market::Transaction> &trans) {
+  std::stringstream outstr;
+  outstr << "TRANSACTIONS" << '\n';
+  outstr << trans.size() << '\n';
+  for (const auto &t : trans) {
+    outstr << t << '\n';
+  }
+  cm_.DeliverAll(outstr.str());
+  SendState();
+}
+
 void MessageSender::OnOfferRetract(int id) { SendState(); }
 
 void MessageSender::OnPaused() { cm_.DeliverAll("PAUSED"); }
 void MessageSender::OnResumed() { cm_.DeliverAll("RESUMED"); }
 void MessageSender::OnPaymentsCalculated(
-    const std::vector<experiment::Payout>& payouts) {
-  for (const auto& payout : payouts) {
+    const std::vector<experiment::Payout> &payouts) {
+  for (const auto &payout : payouts) {
     std::stringstream outstr;
     outstr << "PAYMENT" << '\n';
     outstr << payout.cents;
@@ -74,15 +89,15 @@ void MessageSender::SendState() {
   cm_.DeliverAll(ss.str());
 }
 
-void MessageSender::SendExpStart(int id, const experiment::Configuration& c) {
+void MessageSender::SendExpStart(int id, const experiment::Configuration &c) {
   std::stringstream outstr;
   outstr << "EXPSTART" << '\n';
   outstr << id << ' ' << c.player_types.at(id);
   cm_.Deliver(id, outstr.str());
 }
 
-void HookupMessageSender(MessageSender& mess, experiment::EventManager& em) {
-  em.exp_start.connect([&mess](const experiment::Configuration& c) {
+void HookupMessageSender(MessageSender &mess, experiment::EventManager &em) {
+  em.exp_start.connect([&mess](const experiment::Configuration &c) {
     mess.OnExperimentStarted(c);
   });
   em.exp_end.connect([&mess]() { mess.OnExperimentEnded(); });
@@ -99,14 +114,14 @@ void HookupMessageSender(MessageSender& mess, experiment::EventManager& em) {
   em.offer_retract.connect([&mess](int id) { mess.OnOfferRetract(id); });
   em.paused.connect([&mess]() { mess.OnPaused(); });
   em.resumed.connect([&mess]() { mess.OnResumed(); });
-  em.payments.connect([&mess](const std::vector<experiment::Payout>& payouts) {
+  em.payments.connect([&mess](const std::vector<experiment::Payout> &payouts) {
     mess.OnPaymentsCalculated(payouts);
   });
 }
 
-void HookupMessageSender(MessageSender& mess,
-                         comms::ConnectionEventManager& em) {
+void HookupMessageSender(MessageSender &mess,
+                         comms::ConnectionEventManager &em) {
   em.connected.connect([&mess](int id) { mess.OnConnection(id); });
 }
 
-}  // namespace server
+} // namespace server

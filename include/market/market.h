@@ -13,8 +13,9 @@ namespace market {
 
 class Market {
  public:
-  Market() {}
-  Market(std::map<int, Holdings> init) : auction_(), player_holdings_(init) {}
+  Market() : auction_(true, true) {}
+  Market(std::map<int, Holdings> init)
+      : auction_(true, true), player_holdings_(init) {}
 
   template <typename T>
   std::vector<Transaction> AcceptOffer(T offer) {
@@ -23,9 +24,7 @@ class Market {
   }
 
   template <typename T>
-  OfferValidity CheckOffer(T offer) const {
-    return market::CheckOffer(offer, GetState());
-  }
+  OfferValidity CheckOffer(T offer) const;
 
   void RetractOffer(int unique_id) { auction_.RetractOffer(unique_id); }
 
@@ -43,7 +42,11 @@ class Market {
 
  private:
   std::vector<Transaction> Update(double time);
-
+  bool SufficientCash(Bid bid) const;
+  bool SufficientUnits(Ask ask) const;
+  bool SufficientCash(Ask ask) const {return true;}
+  bool SufficientUnits(Bid bid) const {return true;}
+  
   market::ClearingQueue auction_;
   std::map<int, Holdings> player_holdings_;
 };

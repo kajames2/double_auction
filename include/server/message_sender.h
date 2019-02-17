@@ -26,6 +26,7 @@ class MessageSender {
   void OnBidReceived(market::Bid bid, market::OfferValidity ov);
   void OnAskReceived(market::Ask ask, market::OfferValidity ov);
   void OnOfferRetract(int id);
+  void OnTransactions(const std::vector<market::Transaction>& trans);
   void OnPaused();
   void OnResumed();
   void OnPaymentsCalculated(const std::vector<experiment::Payout>& payouts);

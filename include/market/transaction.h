@@ -15,6 +15,8 @@ struct Transaction {
   int seller_id;
   int price;
   int quantity;
+  int bid_id;
+  int ask_id;
 };
 
 Transaction MakeTransaction(double time, Bid bid, Ask ask);

@@ -7,4 +7,7 @@ Payout ToPayout(const Player& p, double eperdollar) {
   return Payout{p.id, p.name, ncents};
 }
 
+std::ostream& operator<<(std::ostream& os, const Payout& p) {
+    return os << p.id << "," << p.name << "," << p.cents;
+}
 }  // namespace experiment
